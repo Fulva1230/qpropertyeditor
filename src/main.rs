@@ -54,17 +54,17 @@ slint::slint! {
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
-    let mainWindow = MainWindow::new()?;
-    let mainWindowWkRef = mainWindow.as_weak();
-    mainWindow.on_generateProperty(move || {
-        if let Some(mainWindow) = mainWindowWkRef.upgrade() {
+    let main_window = MainWindow::new()?;
+    let main_window_wk_ref = main_window.as_weak();
+    main_window.on_generateProperty(move || {
+        if let Some(mainWindow) = main_window_wk_ref.upgrade() {
             mainWindow.set_declarationText(
                 std::format!("Q_PROPERTY({} {})",
                              mainWindow.get_valueType(),
                              mainWindow.get_valueName()).into())
         }
     });
-    mainWindow.invoke_generateProperty();
-    mainWindow.run()?;
+    main_window.invoke_generateProperty();
+    main_window.run()?;
     Ok(())
 }
