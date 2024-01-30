@@ -1,4 +1,5 @@
 use std::error::Error;
+use convert_case::{Case, Casing};
 
 slint::slint! {
     export component MainWindow inherits Window{
@@ -45,8 +46,9 @@ slint::slint! {
                     text: "Declaration: ";
                     min-width: widthOfDisplay;
                 }
-                Text {
+                TextInput {
                     text: declarationText;
+                    read-only: true;
                     horizontal-stretch: 1;
                 }
             }
@@ -58,10 +60,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let main_window_wk_ref = main_window.as_weak();
     main_window.on_generateProperty(move || {
         if let Some(mainWindow) = main_window_wk_ref.upgrade() {
+            let the_type = mainWindow.get_valueType();
+            let the_name = mainWindow.get_valueName();
             mainWindow.set_declarationText(
-                std::format!("Q_PROPERTY({} {})",
-                             mainWindow.get_valueType(),
-                             mainWindow.get_valueName()).into())
+                std::format!("Q_PROPERTY({} {} READ {} WRITE {} NOTIFY {})",
+                             the_type,
+                             the_name,
+                             the_name,
+                             std::format!("set_{}", the_name).to_case(Case::Camel),
+                             std::format!("{}Changed", the_name).to_case(Case::Camel)
+                ).into())
         }
     });
     main_window.invoke_generateProperty();
