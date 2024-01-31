@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                  String::new()
                              },
                              if mainWindow.get_notifiable() {
-                                 std::format!(" NOTIFY {}", std::format!(" NOTIFY {}Changed", the_name).to_case(Case::Camel))
+                                 std::format!(" NOTIFY {}", std::format!("{}Changed", the_name).to_case(Case::Camel))
                              } else {
                                  String::new()
                              }
