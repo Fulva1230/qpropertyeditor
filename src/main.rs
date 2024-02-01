@@ -8,6 +8,8 @@ slint::slint! {
         default-font-size: 13pt;
         callback generateProperty;
         in property <string> declarationText;
+        in property <string> getterText;
+
         out property <string> valueType: typeTextInput.text;
         out property <string> valueName: nameTextInput.text;
         out property <bool> settable: settableCheck.checked;
@@ -74,6 +76,17 @@ slint::slint! {
                     horizontal-stretch: 1;
                 }
             }
+            Row {
+                Text {
+                    text: "Getter: ";
+                    min-width: widthOfDisplay;
+                }
+                TextInput {
+                    text: getterText;
+                    read-only: true;
+                    horizontal-stretch: 1;
+                }
+            }
         }
     }
 }
@@ -100,7 +113,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                                  String::new()
                              }
                 ).into()
-            )
+            );
+            mainWindow.set_getterText(
+                std::format!("void {}({}) const;",
+                    std::format!("set_{}", the_name).to_case(Case::Camel),
+                    std::format!("{} {}", the_type, the_name)
+                ).into()
+            );
         }
     });
     main_window.invoke_generateProperty();
