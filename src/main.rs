@@ -12,6 +12,7 @@ slint::slint! {
         in property <string> declarationText;
         in property <string> getterText;
         in property <string> setterText;
+        in property <string> notifierText;
 
         out property <string> valueType: typeTextInput.text;
         out property <string> valueName: nameTextInput.text;
@@ -102,6 +103,17 @@ slint::slint! {
                     horizontal-stretch: 1;
                 }
             }
+            if notifiableCheck.checked: HorizontalBox {
+                Text {
+                    text: "Notifier: ";
+                    min-width: widthOfDisplay;
+                }
+                TextInput {
+                    text: notifierText;
+                    read-only: trueProp;
+                    horizontal-stretch: 1;
+                }
+            }
         }
     }
 }
@@ -150,6 +162,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 std::format!(
                     "void {}({});",
                     std::format!("set_{}", the_name).to_case(Case::Camel),
+                    std::format!("{} {}", the_type, the_name)
+                )
+                    .into(),
+            );
+            main_window.set_notifierText(
+                std::format!(
+                    "void {}({});",
+                    std::format!("{}_changed", the_name).to_case(Case::Camel),
                     std::format!("{} {}", the_type, the_name)
                 )
                     .into(),
