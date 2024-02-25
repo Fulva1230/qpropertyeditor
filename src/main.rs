@@ -11,6 +11,7 @@ slint::slint! {
         in property <bool> trueProp;
         in property <string> declarationText;
         in property <string> getterText;
+        in property <string> setterText;
 
         out property <string> valueType: typeTextInput.text;
         out property <string> valueName: nameTextInput.text;
@@ -90,6 +91,17 @@ slint::slint! {
                     horizontal-stretch: 1;
                 }
             }
+            if settableCheck.checked: HorizontalBox {
+                Text {
+                    text: "Setter: ";
+                    min-width: widthOfDisplay;
+                }
+                TextInput {
+                    text: setterText;
+                    read-only: trueProp;
+                    horizontal-stretch: 1;
+                }
+            }
         }
     }
 }
@@ -128,7 +140,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             );
             main_window.set_getterText(
                 std::format!(
-                    "void {}({}) const;",
+                    "{} {}() const;",
+                    the_type,
+                    the_name
+                )
+                    .into(),
+            );
+            main_window.set_setterText(
+                std::format!(
+                    "void {}({});",
                     std::format!("set_{}", the_name).to_case(Case::Camel),
                     std::format!("{} {}", the_type, the_name)
                 )
