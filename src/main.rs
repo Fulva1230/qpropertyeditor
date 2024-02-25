@@ -8,6 +8,7 @@ slint::slint! {
         title: "QPropertyEditor";
         default-font-size: 13pt;
         callback generateProperty;
+        in property <bool> trueProp;
         in property <string> declarationText;
         in property <string> getterText;
 
@@ -24,14 +25,14 @@ slint::slint! {
             HorizontalBox {
                 settableCheck := CheckBox {
                     text: "Settable";
-                    checked: true;
+                    checked: trueProp;
                     toggled => {
                         root.generateProperty();
                     }
                 }
                 notifiableCheck := CheckBox {
                     text: "Notifiable";
-                    checked: true;
+                    checked: trueProp;
                     toggled => {
                         root.generateProperty();
                     }
@@ -74,7 +75,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: declarationText;
-                    read-only: true;
+                    read-only: trueProp;
                     horizontal-stretch: 1;
                 }
             }
@@ -85,7 +86,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: getterText;
-                    read-only: true;
+                    read-only: trueProp;
                     horizontal-stretch: 1;
                 }
             }
@@ -94,6 +95,7 @@ slint::slint! {
 }
 fn main() -> Result<(), Box<dyn Error>> {
     let main_window = TheMainWindow::new()?;
+    main_window.set_trueProp(true);
     let main_window_wk_ref = main_window.as_weak();
     main_window.on_generateProperty(move || {
         if let Some(main_window) = main_window_wk_ref.upgrade() {
@@ -122,7 +124,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         String::new()
                     }
                 )
-                .into(),
+                    .into(),
             );
             main_window.set_getterText(
                 std::format!(
@@ -130,7 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     std::format!("set_{}", the_name).to_case(Case::Camel),
                     std::format!("{} {}", the_type, the_name)
                 )
-                .into(),
+                    .into(),
             );
         }
     });
