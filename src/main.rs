@@ -1,9 +1,10 @@
-use std::error::Error;
 use convert_case::{Case, Casing};
+use std::error::Error;
 
 slint::slint! {
-    import { CheckBox } from "std-widgets.slint";
-    export component MainWindow inherits Window{
+    import { CheckBox, VerticalBox, HorizontalBox } from "std-widgets.slint";
+
+    export component TheMainWindow inherits Window {
         title: "QPropertyEditor";
         default-font-size: 13pt;
         callback generateProperty;
@@ -15,31 +16,32 @@ slint::slint! {
         out property <bool> settable: settableCheck.checked;
         out property <bool> notifiable: notifiableCheck.checked;
         property<length> widthOfDisplay: 80pt;
-        max-height: mainLayout.min-height;
+        max-height: main_layout.min-height;
 
-        mainLayout := GridLayout {
+        main_layout := VerticalBox {
             spacing: 5px;
             padding: 5px;
-            Row {
+            HorizontalBox {
                 settableCheck := CheckBox {
                     text: "Settable";
                     checked: true;
                     toggled => {
-                        root.generateProperty()
+                        root.generateProperty();
                     }
                 }
                 notifiableCheck := CheckBox {
                     text: "Notifiable";
                     checked: true;
                     toggled => {
-                        root.generateProperty()
+                        root.generateProperty();
                     }
                 }
                 Rectangle {
                     horizontal-stretch: 1;
                 }
             }
-            Row {
+
+            HorizontalBox {
                 Text {
                     text: "Type: ";
                     min-width: widthOfDisplay;
@@ -48,11 +50,11 @@ slint::slint! {
                     text: "bool";
                     horizontal-stretch: 1;
                     edited => {
-                        root.generateProperty()
+                        root.generateProperty();
                     }
                 }
             }
-            Row {
+            HorizontalBox {
                 Text {
                     text: "Name: ";
                     min-width: widthOfDisplay;
@@ -61,11 +63,11 @@ slint::slint! {
                     text: "value";
                     horizontal-stretch: 1;
                     edited => {
-                        root.generateProperty()
+                        root.generateProperty();
                     }
                 }
             }
-            Row{
+            HorizontalBox {
                 Text {
                     text: "Declaration: ";
                     min-width: widthOfDisplay;
@@ -76,7 +78,7 @@ slint::slint! {
                     horizontal-stretch: 1;
                 }
             }
-            Row {
+            HorizontalBox {
                 Text {
                     text: "Getter: ";
                     min-width: widthOfDisplay;
@@ -91,34 +93,44 @@ slint::slint! {
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
-    let main_window = MainWindow::new()?;
+    let main_window = TheMainWindow::new()?;
     let main_window_wk_ref = main_window.as_weak();
     main_window.on_generateProperty(move || {
-        if let Some(mainWindow) = main_window_wk_ref.upgrade() {
-            let the_type = mainWindow.get_valueType();
-            let the_name = mainWindow.get_valueName();
-            mainWindow.set_declarationText(
-                std::format!("Q_PROPERTY({} {} READ {}{}{})",
-                             the_type,
-                             the_name,
-                             the_name,
-                             if mainWindow.get_settable() {
-                                 std::format!(" WRITE {}", std::format!("set_{}", the_name).to_case(Case::Camel))
-                             } else {
-                                 String::new()
-                             },
-                             if mainWindow.get_notifiable() {
-                                 std::format!(" NOTIFY {}", std::format!("{}Changed", the_name).to_case(Case::Camel))
-                             } else {
-                                 String::new()
-                             }
-                ).into()
+        if let Some(main_window) = main_window_wk_ref.upgrade() {
+            let the_type = main_window.get_valueType();
+            let the_name = main_window.get_valueName();
+            main_window.set_declarationText(
+                std::format!(
+                    "Q_PROPERTY({} {} READ {}{}{})",
+                    the_type,
+                    the_name,
+                    the_name,
+                    if main_window.get_settable() {
+                        std::format!(
+                            " WRITE {}",
+                            std::format!("set_{}", the_name).to_case(Case::Camel)
+                        )
+                    } else {
+                        String::new()
+                    },
+                    if main_window.get_notifiable() {
+                        std::format!(
+                            " NOTIFY {}",
+                            std::format!("{}Changed", the_name).to_case(Case::Camel)
+                        )
+                    } else {
+                        String::new()
+                    }
+                )
+                .into(),
             );
-            mainWindow.set_getterText(
-                std::format!("void {}({}) const;",
+            main_window.set_getterText(
+                std::format!(
+                    "void {}({}) const;",
                     std::format!("set_{}", the_name).to_case(Case::Camel),
                     std::format!("{} {}", the_type, the_name)
-                ).into()
+                )
+                .into(),
             );
         }
     });
@@ -126,3 +138,5 @@ fn main() -> Result<(), Box<dyn Error>> {
     main_window.run()?;
     Ok(())
 }
+
+
