@@ -18,6 +18,7 @@ slint::slint! {
         out property <string> valueName: nameTextInput.text;
         out property <bool> settable: settableCheck.checked;
         out property <bool> notifiable: notifiableCheck.checked;
+        out property <bool> constRef: constRefCheck.checked;
         property<length> widthOfDisplay: 80pt;
         max-height: main_layout.min-height;
 
@@ -34,6 +35,13 @@ slint::slint! {
                 }
                 notifiableCheck := CheckBox {
                     text: "Notifiable";
+                    checked: trueProp;
+                    toggled => {
+                        root.generateProperty();
+                    }
+                }
+                constRefCheck := CheckBox {
+                    text: "Const ref";
                     checked: trueProp;
                     toggled => {
                         root.generateProperty();
@@ -158,11 +166,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                 )
                     .into(),
             );
+            let parameter = if main_window.get_constRef() {
+                std::format!("const {} &{}", the_type, the_name)
+            } else {
+                std::format!("{} {}", the_type, the_name)
+            };
             main_window.set_setterText(
                 std::format!(
                     "void {}({});",
                     std::format!("set_{}", the_name).to_case(Case::Camel),
-                    std::format!("{} {}", the_type, the_name)
+                    parameter
                 )
                     .into(),
             );
@@ -170,7 +183,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 std::format!(
                     "void {}({});",
                     std::format!("{}_changed", the_name).to_case(Case::Camel),
-                    std::format!("{} {}", the_type, the_name)
+                    parameter
                 )
                     .into(),
             );
