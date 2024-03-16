@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 convert_case = "0.6"
-slint = "1.4"
+slint = "1.5"

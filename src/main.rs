@@ -1,11 +1,13 @@
+#![windows_subsystem = "windows"]
 use convert_case::{Case, Casing};
 use std::error::Error;
 use slint::SharedString;
 
 slint::slint! {
-    import { CheckBox, VerticalBox, HorizontalBox } from "std-widgets.slint";
+    import { CheckBox, VerticalBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
+    import { StandardButton, Button } from "std-widgets.slint";
 
-    export component TheMainWindow inherits Window {
+    component TheMainWindow inherits Window {
         title: "QPropertyEditor";
         default-font-size: 13pt;
         callback generateProperty;
@@ -26,6 +28,9 @@ slint::slint! {
         main_layout := VerticalBox {
             spacing: 5px;
             padding: 5px;
+            HorizontalBox {
+                AboutSlint{}
+            }
             HorizontalBox {
                 settableCheck := CheckBox {
                     text: "Settable";
@@ -125,10 +130,9 @@ slint::slint! {
             }
         }
     }
+
+    export {TheMainWindow}
 }
-
-
-
 struct QProperty {
     the_type: SharedString,
     the_name: SharedString,
