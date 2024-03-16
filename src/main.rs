@@ -1,5 +1,6 @@
 use convert_case::{Case, Casing};
 use std::error::Error;
+use slint::SharedString;
 
 slint::slint! {
     import { CheckBox, VerticalBox, HorizontalBox } from "std-widgets.slint";
@@ -125,68 +126,99 @@ slint::slint! {
         }
     }
 }
+
+
+
+struct QProperty {
+    the_type: SharedString,
+    the_name: SharedString,
+    settable: bool,
+    notifiable: bool,
+    const_ref: bool,
+}
+
+impl QProperty {
+    fn declaration(&self) -> String {
+        let mut str_buf = String::with_capacity(64);
+        str_buf.push_str(&std::format!("Q_PROPERTY({} {}", self.the_type, self.the_name));
+        if self.settable {
+            str_buf.push_str(&std::format!(
+                " WRITE {}",
+                std::format!("set_{}", self.the_name).to_case(Case::Camel)
+            ));
+        }
+        if self.notifiable {
+            str_buf.push_str(&std::format!(
+                " NOTIFY {}",
+                std::format!("{}Changed", self.the_name).to_case(Case::Camel)
+            ));
+        }
+        str_buf.push_str(")");
+        str_buf
+    }
+
+    fn getter(&self) -> String {
+        std::format!(
+            "{} {}() const;",
+            self.the_type,
+            self.the_name
+        )
+    }
+
+    fn parameters(&self) -> String {
+        if self.const_ref {
+            std::format!("const {} &{}", self.the_type, self.the_name)
+        } else {
+            std::format!("{} {}", self.the_type, self.the_name)
+        }
+    }
+    fn setter(&self) -> String {
+        std::format!(
+            "void {}({});",
+            std::format!("set_{}", self.the_name).to_case(Case::Camel),
+            self.parameters()
+        )
+    }
+
+    fn notifier(&self) -> String {
+        std::format!(
+            "void {}({});",
+            std::format!("{}_changed", self.the_name).to_case(Case::Camel),
+            self.parameters()
+        )
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let main_window = TheMainWindow::new()?;
     main_window.set_trueProp(true);
-    let main_window_wk_ref = main_window.as_weak();
-    main_window.on_generateProperty(move || {
-        if let Some(main_window) = main_window_wk_ref.upgrade() {
-            let the_type = main_window.get_valueType();
-            let the_name = main_window.get_valueName();
-            main_window.set_declarationText(
-                std::format!(
-                    "Q_PROPERTY({} {} READ {}{}{})",
+    main_window.on_generateProperty({
+        let main_window_wk_ref = main_window.as_weak();
+        move || {
+            if let Some(main_window) = main_window_wk_ref.upgrade() {
+                let the_type = main_window.get_valueType();
+                let the_name = main_window.get_valueName();
+
+                let qproperty = QProperty {
                     the_type,
                     the_name,
-                    the_name,
-                    if main_window.get_settable() {
-                        std::format!(
-                            " WRITE {}",
-                            std::format!("set_{}", the_name).to_case(Case::Camel)
-                        )
-                    } else {
-                        String::new()
-                    },
-                    if main_window.get_notifiable() {
-                        std::format!(
-                            " NOTIFY {}",
-                            std::format!("{}Changed", the_name).to_case(Case::Camel)
-                        )
-                    } else {
-                        String::new()
-                    }
-                )
-                    .into(),
-            );
-            main_window.set_getterText(
-                std::format!(
-                    "{} {}() const;",
-                    the_type,
-                    the_name
-                )
-                    .into(),
-            );
-            let parameter = if main_window.get_constRef() {
-                std::format!("const {} &{}", the_type, the_name)
-            } else {
-                std::format!("{} {}", the_type, the_name)
-            };
-            main_window.set_setterText(
-                std::format!(
-                    "void {}({});",
-                    std::format!("set_{}", the_name).to_case(Case::Camel),
-                    parameter
-                )
-                    .into(),
-            );
-            main_window.set_notifierText(
-                std::format!(
-                    "void {}({});",
-                    std::format!("{}_changed", the_name).to_case(Case::Camel),
-                    parameter
-                )
-                    .into(),
-            );
+                    settable: main_window.get_settable(),
+                    notifiable: main_window.get_notifiable(),
+                    const_ref: main_window.get_constRef(),
+                };
+                main_window.set_declarationText(
+                    qproperty.declaration().into()
+                );
+                main_window.set_getterText(
+                    qproperty.getter().into(),
+                );
+                main_window.set_setterText(
+                    qproperty.setter().into(),
+                );
+                main_window.set_notifierText(
+                    qproperty.notifier().into(),
+                );
+            }
         }
     });
     main_window.invoke_generateProperty();
