@@ -11,7 +11,6 @@ slint::slint! {
         title: "QPropertyEditor";
         default-font-size: 13pt;
         callback generateProperty;
-        in property <bool> trueProp;
         in property <string> declarationText;
         in property <string> getterText;
         in property <string> setterText;
@@ -34,21 +33,21 @@ slint::slint! {
             HorizontalBox {
                 settableCheck := CheckBox {
                     text: "Settable";
-                    checked: trueProp;
+                    checked: true;
                     toggled => {
                         root.generateProperty();
                     }
                 }
                 notifiableCheck := CheckBox {
                     text: "Notifiable";
-                    checked: trueProp;
+                    checked: true;
                     toggled => {
                         root.generateProperty();
                     }
                 }
                 constRefCheck := CheckBox {
                     text: "Const ref";
-                    checked: trueProp;
+                    checked: true;
                     toggled => {
                         root.generateProperty();
                     }
@@ -91,7 +90,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: declarationText;
-                    read-only: trueProp;
+                    read-only: true;
                     horizontal-stretch: 1;
                 }
             }
@@ -102,7 +101,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: getterText;
-                    read-only: trueProp;
+                    read-only: true;
                     horizontal-stretch: 1;
                 }
             }
@@ -113,7 +112,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: setterText;
-                    read-only: trueProp;
+                    read-only: true;
                     horizontal-stretch: 1;
                 }
             }
@@ -124,7 +123,7 @@ slint::slint! {
                 }
                 TextInput {
                     text: notifierText;
-                    read-only: trueProp;
+                    read-only: true;
                     horizontal-stretch: 1;
                 }
             }
@@ -195,17 +194,13 @@ impl QProperty {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let main_window = TheMainWindow::new()?;
-    main_window.set_trueProp(true);
     main_window.on_generateProperty({
         let main_window_wk_ref = main_window.as_weak();
         move || {
             if let Some(main_window) = main_window_wk_ref.upgrade() {
-                let the_type = main_window.get_valueType();
-                let the_name = main_window.get_valueName();
-
                 let qproperty = QProperty {
-                    the_type,
-                    the_name,
+                    the_type: main_window.get_valueType(),
+                    the_name: main_window.get_valueName(),
                     settable: main_window.get_settable(),
                     notifiable: main_window.get_notifiable(),
                     const_ref: main_window.get_constRef(),
