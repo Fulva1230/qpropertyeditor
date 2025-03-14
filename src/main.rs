@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 use convert_case::{Case, Casing};
-use std::error::Error;
 use slint::SharedString;
+use std::error::Error;
 
 slint::slint! {
     import { CheckBox, VerticalBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
@@ -10,6 +10,7 @@ slint::slint! {
     component TheMainWindow inherits Window {
         title: "QPropertyEditor";
         default-font-size: 13pt;
+        callback save;
         callback generateProperty;
         in property <string> declarationText;
         in property <string> getterText;
@@ -24,12 +25,27 @@ slint::slint! {
         property<length> widthOfDisplay: 80pt;
         max-height: main_layout.min-height;
 
+        MenuBar {
+            Menu {
+                title: @tr("Help");
+                MenuItem {
+                    title: @tr("About");
+                    activated => { aboutPopup.show() }
+                }
+            }
+        }
+
+        aboutPopup := PopupWindow {
+            Rectangle{
+                AboutSlint{}
+                background: #315afd;
+            }
+        }
+
         main_layout := VerticalBox {
             spacing: 5px;
             padding: 5px;
-            HorizontalBox {
-                AboutSlint{}
-            }
+
             HorizontalBox {
                 settableCheck := CheckBox {
                     text: "Settable";
@@ -143,7 +159,11 @@ struct QProperty {
 impl QProperty {
     fn declaration(&self) -> String {
         let mut str_buf = String::with_capacity(64);
-        str_buf.push_str(&std::format!("Q_PROPERTY({} {}", self.the_type, self.the_name));
+        str_buf.push_str(&std::format!(
+            "Q_PROPERTY({} {}",
+            self.the_type,
+            self.the_name
+        ));
         if self.settable {
             str_buf.push_str(&std::format!(
                 " WRITE {}",
@@ -161,11 +181,7 @@ impl QProperty {
     }
 
     fn getter(&self) -> String {
-        std::format!(
-            "{} {}() const;",
-            self.the_type,
-            self.the_name
-        )
+        std::format!("{} {}() const;", self.the_type, self.the_name)
     }
 
     fn parameters(&self) -> String {
@@ -205,18 +221,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     notifiable: main_window.get_notifiable(),
                     const_ref: main_window.get_constRef(),
                 };
-                main_window.set_declarationText(
-                    qproperty.declaration().into()
-                );
-                main_window.set_getterText(
-                    qproperty.getter().into(),
-                );
-                main_window.set_setterText(
-                    qproperty.setter().into(),
-                );
-                main_window.set_notifierText(
-                    qproperty.notifier().into(),
-                );
+                main_window.set_declarationText(qproperty.declaration().into());
+                main_window.set_getterText(qproperty.getter().into());
+                main_window.set_setterText(qproperty.setter().into());
+                main_window.set_notifierText(qproperty.notifier().into());
             }
         }
     });
@@ -224,5 +232,3 @@ fn main() -> Result<(), Box<dyn Error>> {
     main_window.run()?;
     Ok(())
 }
-
-
