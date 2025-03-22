@@ -2,6 +2,9 @@
 use convert_case::{Case, Casing};
 use slint::SharedString;
 use std::error::Error;
+use std::fmt::{format, Debug};
+use std::fs;
+use std::io::prelude::*;
 
 slint::slint! {
     import { CheckBox, VerticalBox, HorizontalBox, AboutSlint } from "std-widgets.slint";
@@ -26,6 +29,14 @@ slint::slint! {
         max-height: main_layout.min-height;
 
         MenuBar {
+            Menu {
+                title: @tr("File");
+                MenuItem {
+                    title: @tr("Save");
+                    activated => { root.save() }
+                }
+            }
+
             Menu {
                 title: @tr("Help");
                 MenuItem {
@@ -206,10 +217,44 @@ impl QProperty {
             self.parameters()
         )
     }
+
+    fn summery(&self) -> String {
+        std::format!(
+            "{}\n\
+            {}\n\
+            {}\n",
+            self.getter(),
+            self.setter(),
+            self.notifier()
+        )
+    }
+}
+
+fn on_save_callback(main_window: TheMainWindow) {
+    if let Ok(mut file) = fs::File::create("save.txt") {
+        let qproperty = QProperty {
+            the_type: main_window.get_valueType(),
+            the_name: main_window.get_valueName(),
+            settable: main_window.get_settable(),
+            notifiable: main_window.get_notifiable(),
+            const_ref: main_window.get_constRef(),
+        };
+        let summery = qproperty.summery();
+        file.write_all(summery.as_bytes()).unwrap()
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let main_window = TheMainWindow::new()?;
+
+    main_window.on_save({
+        let main_window_wk_ref = main_window.as_weak();
+        move || {
+            if let Some(main_window) = main_window_wk_ref.upgrade() {
+                on_save_callback(main_window)
+            }
+        }
+    });
     main_window.on_generateProperty({
         let main_window_wk_ref = main_window.as_weak();
         move || {
