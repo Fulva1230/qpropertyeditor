@@ -244,6 +244,20 @@ fn on_save_callback(main_window: TheMainWindow) {
     }
 }
 
+fn on_generate_property(main_window: TheMainWindow){
+    let qproperty = QProperty {
+        the_type: main_window.get_valueType(),
+        the_name: main_window.get_valueName(),
+        settable: main_window.get_settable(),
+        notifiable: main_window.get_notifiable(),
+        const_ref: main_window.get_constRef(),
+    };
+    main_window.set_declarationText(qproperty.declaration().into());
+    main_window.set_getterText(qproperty.getter().into());
+    main_window.set_setterText(qproperty.setter().into());
+    main_window.set_notifierText(qproperty.notifier().into());
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let main_window = TheMainWindow::new()?;
 
@@ -259,17 +273,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let main_window_wk_ref = main_window.as_weak();
         move || {
             if let Some(main_window) = main_window_wk_ref.upgrade() {
-                let qproperty = QProperty {
-                    the_type: main_window.get_valueType(),
-                    the_name: main_window.get_valueName(),
-                    settable: main_window.get_settable(),
-                    notifiable: main_window.get_notifiable(),
-                    const_ref: main_window.get_constRef(),
-                };
-                main_window.set_declarationText(qproperty.declaration().into());
-                main_window.set_getterText(qproperty.getter().into());
-                main_window.set_setterText(qproperty.setter().into());
-                main_window.set_notifierText(qproperty.notifier().into());
+                on_generate_property(main_window);
             }
         }
     });
