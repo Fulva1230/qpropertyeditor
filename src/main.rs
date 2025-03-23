@@ -2,7 +2,7 @@
 use convert_case::{Case, Casing};
 use slint::SharedString;
 use std::error::Error;
-use std::fmt::{format, Debug};
+use std::fmt::{Debug, format};
 use std::fs;
 use std::io::prelude::*;
 
@@ -222,7 +222,9 @@ impl QProperty {
         std::format!(
             "{}\n\
             {}\n\
+            {}\n\
             {}\n",
+            self.declaration(),
             self.getter(),
             self.setter(),
             self.notifier()
@@ -239,12 +241,11 @@ fn on_save_callback(main_window: TheMainWindow) {
             notifiable: main_window.get_notifiable(),
             const_ref: main_window.get_constRef(),
         };
-        let summery = qproperty.summery();
-        file.write_all(summery.as_bytes()).unwrap()
+        file.write_all(qproperty.summery().as_bytes()).unwrap()
     }
 }
 
-fn on_generate_property(main_window: TheMainWindow){
+fn on_generate_property(main_window: TheMainWindow) {
     let qproperty = QProperty {
         the_type: main_window.get_valueType(),
         the_name: main_window.get_valueName(),
