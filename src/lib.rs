@@ -255,16 +255,20 @@ impl QProperty {
     }
 
     pub fn summery(&self) -> String {
-        std::format!(
-            "{}\n\
-            {}\n\
-            {}\n\
-            {}\n",
-            self.declaration(),
-            self.getter(),
-            self.setter(),
-            self.notifier()
-        )
+        let mut str_buf = String::with_capacity(64);
+        str_buf.push_str(&self.declaration());
+        str_buf.push_str("\n");
+        str_buf.push_str(&self.getter());
+        str_buf.push_str("\n");
+        if self.settable {
+            str_buf.push_str(&self.setter());
+            str_buf.push_str("\n");
+        }
+        if self.notifiable {
+            str_buf.push_str(&self.notifier());
+            str_buf.push_str("\n");
+        }
+        str_buf
     }
 }
 
