@@ -183,6 +183,7 @@ slint::slint! {
     export {TheMainWindow}
 }
 
+#[derive(Clone, Debug)]
 pub struct QProperty {
     the_type: SharedString,
     the_name: SharedString,
@@ -211,6 +212,7 @@ impl QProperty {
             self.the_type,
             self.the_name
         ));
+        str_buf.push_str(&std::format!(" READ {}", self.the_name));
         if self.settable {
             str_buf.push_str(&std::format!(
                 " WRITE {}",
@@ -273,19 +275,21 @@ impl QProperty {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     #[test]
     fn test_closure() {
         let mut list = vec![1, 2, 3];
         println!("Before defining closure: {list:?}");
 
-        fn f<F>(g: F) where F: FnOnce() -> () {
+        fn f<F>(g: F)
+        where
+            F: FnOnce() -> (),
+        {
             g();
         }
-        let borrows_mutably  = || list.push(7);
+        let borrows_mutably = || list.push(7);
         f(borrows_mutably);
 
         println!("After calling closure: {list:?}");
     }
 }
-
