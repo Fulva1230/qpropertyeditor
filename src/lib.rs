@@ -1,4 +1,4 @@
-use convert_case::{Case, Casing};
+use heck::{ToLowerCamelCase};
 use slint::SharedString;
 
 slint::slint! {
@@ -212,17 +212,17 @@ impl QProperty {
             self.the_type,
             self.the_name
         ));
-        str_buf.push_str(&std::format!(" READ {}", self.the_name));
+        str_buf.push_str(&std::format!(" READ {}", self.the_name.to_lower_camel_case()));
         if self.settable {
             str_buf.push_str(&std::format!(
                 " WRITE {}",
-                std::format!("set_{}", self.the_name).to_case(Case::Camel)
+                std::format!("set_{}", self.the_name).as_str().to_lower_camel_case()
             ));
         }
         if self.notifiable {
             str_buf.push_str(&std::format!(
                 " NOTIFY {}",
-                std::format!("{}Changed", self.the_name).to_case(Case::Camel)
+                std::format!("{}Changed", self.the_name).as_str().to_lower_camel_case()
             ));
         }
         str_buf.push_str(")");
@@ -230,7 +230,7 @@ impl QProperty {
     }
 
     pub fn getter(&self) -> String {
-        std::format!("{} {}() const;", self.the_type, self.the_name)
+        std::format!("{} {}() const;", self.the_type, self.the_name.as_str().to_lower_camel_case())
     }
 
     pub fn parameters(&self) -> String {
@@ -243,7 +243,7 @@ impl QProperty {
     pub fn setter(&self) -> String {
         std::format!(
             "void {}({});",
-            std::format!("set_{}", self.the_name).to_case(Case::Camel),
+            std::format!("set_{}", self.the_name).as_str().to_lower_camel_case(),
             self.parameters()
         )
     }
@@ -251,7 +251,7 @@ impl QProperty {
     pub fn notifier(&self) -> String {
         std::format!(
             "void {}({});",
-            std::format!("{}_changed", self.the_name).to_case(Case::Camel),
+            std::format!("{}_changed", self.the_name).as_str().to_lower_camel_case(),
             self.parameters()
         )
     }
