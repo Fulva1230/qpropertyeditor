@@ -7,5 +7,5 @@ edition = "2024"
 
 [dependencies]
 arboard = "3.4.1"
-slint = "1.12"
+slint = { version = "1.13", features = ["renderer-skia"] }
 heck = "0.5"
